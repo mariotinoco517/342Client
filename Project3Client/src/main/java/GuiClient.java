@@ -1,4 +1,5 @@
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import javafx.application.Application;
@@ -31,6 +32,7 @@ public class GuiClient extends Application{
 	ComboBox<Integer> listUsers;
 	ListView<String> listItems;
 
+	LoginScene login;
 	
 	
 	public static void main(String[] args) {
@@ -52,14 +54,37 @@ public class GuiClient extends Application{
 							break;
 						case TEXT:
 							listItems.getItems().add(data.recipient+": "+data.message);
+							break;
+						case USERS:
+							System.out.println("Trying to update ComboBox");
+							ArrayList<Integer> temp = data.users;
+							ComboBox<Integer> tempArr = new ComboBox<>();
+//							listUsers = new ComboBox<>();
+							for(Integer u: temp){
+//								System.out.println(u);
+//								tempArr.getItems().add(u);
+								listUsers.getItems().add(u);
+							}
+//							listUsers = tempArr;
+							break;
+
+
 					}
 			});
 		});
-							
+
+		login = new LoginScene();
+		sceneMap = new HashMap<>();
+		sceneMap.put("Login", login.getLoginScene());
+
+
+		//Start clients connection with the server
 		clientConnection.start();
+
 
 		listUsers = new ComboBox<Integer>();
 		listUsers.getItems().add(-1);
+		//sets dropbox default to -1
 		listUsers.setValue(-1);
 		listItems = new ListView<String>();
 
@@ -86,6 +111,8 @@ public class GuiClient extends Application{
 		primaryStage.setScene(new Scene(clientBox, 400, 300));
 		primaryStage.setTitle("Client");
 		primaryStage.show();
+
+		primaryStage.setScene(sceneMap.get("Login"));
 		
 	}
 	
