@@ -58,17 +58,23 @@ public class GuiClient extends Application{
 						case USERS:
 							System.out.println("Trying to update ComboBox");
 							ArrayList<Integer> temp = data.users;
-							ComboBox<Integer> tempArr = new ComboBox<>();
-//							listUsers = new ComboBox<>();
 							for(Integer u: temp){
-//								System.out.println(u);
-//								tempArr.getItems().add(u);
 								listUsers.getItems().add(u);
 							}
-//							listUsers = tempArr;
 							break;
-
-
+						case VALIDNAME:
+							System.out.println("Getting validation");
+							if(data.recipient == 404){
+								System.err.println("USER NOT FOUND");
+								login.loginError();
+							}else if(data.recipient == 414){
+								System.err.println("USER ALREADY EXISTS");
+								login.createError();
+							}else if(data.recipient == 1){
+								System.out.println("VALID COMBO");
+								primaryStage.setScene(sceneMap.get("Box"));
+							}
+							break;
 					}
 			});
 		});
@@ -108,13 +114,50 @@ public class GuiClient extends Application{
         });
 
 
-		primaryStage.setScene(new Scene(clientBox, 400, 300));
+		sceneMap.put("Box", new Scene(clientBox, 400, 300));
+
+		primaryStage.setScene(sceneMap.get("Login"));
 		primaryStage.setTitle("Client");
 		primaryStage.show();
 
-		primaryStage.setScene(sceneMap.get("Login"));
+
+
+
+		login.getLoginButton().setOnAction(e->{
+			String username = login.getLoginName();
+			String password = login.getLoginPassword();
+			boolean valid = true;
+			if(username.contains(" ") || password.isEmpty()){
+				login.loginNameError();
+				valid = false;
+			}
+			if(password.contains(" ") || password.isEmpty()){
+				login.loginPasswordError();
+				valid = false;
+			}
+			if(valid){
+				clientConnection.send(new Message(username, password, 1));
+			}
+		});
+		login.getCreateButton().setOnAction(e->{
+			String username = login.getCreateName();
+			String password = login.getCreatePassword();
+			boolean valid = true;
+			if(username.contains(" ") || password.isEmpty()){
+				login.createNameError();
+				valid = false;
+			}
+			if(password.contains(" ") || password.isEmpty()){
+				login.createPasswordError();
+				valid = false;
+			}
+			if(valid){
+				clientConnection.send(new Message(username, password, 0));
+			}
+		});
 		
 	}
+
 	
 
 
