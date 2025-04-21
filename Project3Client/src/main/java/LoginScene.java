@@ -97,7 +97,7 @@ public class LoginScene {
         createLine.setTranslateY(-120);
 
         createName = new Text("Username");
-        createName.setTranslateX(245);
+        createName.setTranslateX(95);
         createName.setTranslateY(-75);
 
         createUsernameField = new TextField();
@@ -106,7 +106,7 @@ public class LoginScene {
         createUsernameField.setTranslateY(-50);
 
         createPassword = new Text("Password");
-        createPassword.setTranslateX(245);
+        createPassword.setTranslateX(95);
 
         createPasswordField = new TextField();
         createPasswordField.setMaxSize(211, 25);

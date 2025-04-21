@@ -17,9 +17,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import jdk.tools.jmod.Main;
 
 public class GuiClient extends Application{
 
+	MainGameScreen n = new MainGameScreen();
 	
 	TextField c1;
 	Button b1;
@@ -138,6 +140,8 @@ public class GuiClient extends Application{
 			if(valid){
 				clientConnection.send(new Message(username, password, 1));
 			}
+			//primaryStage.setScene(n.getGameScreen());
+			//if you wanna see the game screen uncomment line above and comment the if statement above it
 		});
 		login.getCreateButton().setOnAction(e->{
 			String username = login.getCreateName();
@@ -154,6 +158,9 @@ public class GuiClient extends Application{
 			if(valid){
 				clientConnection.send(new Message(username, password, 0));
 			}
+		});
+		n.getExitGame().setOnAction( e->{
+				//adding to go back to main menu
 		});
 		
 	}
