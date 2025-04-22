@@ -2,6 +2,8 @@ Client.class
 MessageType.class
 GuiClient.class
 GuiClient$2.class
+SettingsPage.class
+HomePage.class
 LoginScene.class
 Message.class
 GuiClient$1.class

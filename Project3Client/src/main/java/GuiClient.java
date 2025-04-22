@@ -21,8 +21,11 @@ import jdk.tools.jmod.Main;
 
 public class GuiClient extends Application{
 
-//	MainGameScreen n = new MainGameScreen();
-	
+	MainGameScreen gameScreen = new MainGameScreen();
+	HomePage homeScreen = new HomePage();
+	SettingsPage settingsScreen = new SettingsPage();
+	LoginScene login;
+
 	TextField c1;
 	Button b1;
 	HashMap<String, Scene> sceneMap;
@@ -35,8 +38,6 @@ public class GuiClient extends Application{
 	ComboBox<String> listUsers;
 	ListView<String> listItems;
 
-	LoginScene login;
-	
 	
 	public static void main(String[] args) {
 		launch(args);
@@ -134,6 +135,7 @@ public class GuiClient extends Application{
 
 
 
+		//login screen buttons
 		login.getLoginButton().setOnAction(e->{
 			String username = login.getLoginName();
 			String password = login.getLoginPassword();
@@ -146,11 +148,10 @@ public class GuiClient extends Application{
 				login.loginPasswordError();
 				valid = false;
 			}
-			if(valid){
-				clientConnection.send(new Message(username, password, 1));
-			}
-			//primaryStage.setScene(n.getGameScreen());
-			//if you wanna see the game screen uncomment line above and comment the if statement above it
+//			if(valid){
+//				clientConnection.send(new Message(username, password, 1));
+//			}
+			primaryStage.setScene(homeScreen.getHomeScreen());
 		});
 		login.getCreateButton().setOnAction(e->{
 			String username = login.getCreateName();
@@ -164,13 +165,35 @@ public class GuiClient extends Application{
 				login.createPasswordError();
 				valid = false;
 			}
-			if(valid){
-				clientConnection.send(new Message(username, password, 0));
-			}
+//			if(valid){
+//				clientConnection.send(new Message(username, password, 0));
+//			}
+			primaryStage.setScene(homeScreen.getHomeScreen());
 		});
-//		n.getExitGame().setOnAction( e->{
-//				//adding to go back to main menu
-//		});
+
+		//home screen buttons
+		homeScreen.getLogout().setOnAction(e->{
+			primaryStage.setScene(login.getLoginScene());
+		});
+		homeScreen.getNewGame().setOnAction(e->{
+			primaryStage.setScene(gameScreen.getGameScreen());
+		});
+		homeScreen.getQuitGame().setOnAction(e->{
+			javafx.application.Platform.exit();
+		});
+		homeScreen.getSettings().setOnAction(e->{
+			primaryStage.setScene(settingsScreen.getSettingsScreen());
+		});
+
+		//settings screen buttons
+		settingsScreen.getExitButton().setOnAction(e->{
+			primaryStage.setScene(homeScreen.getHomeScreen());
+		});
+
+		//game screen buttons
+		gameScreen.getExitGame().setOnAction( e->{
+			primaryStage.setScene(homeScreen.getHomeScreen());
+		});
 		
 	}
 

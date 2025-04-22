@@ -1,4 +1,5 @@
 import javafx.application.Application;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -35,7 +36,7 @@ public class MainGameScreen{
 
     public MainGameScreen(){
         StackPane root = new StackPane();
-        StackPane chat = new StackPane();
+        StackPane chat;
         Shape gridShape = makeGrid();
         chat = makeChatBox();
         exitGame = leaveGame();
@@ -71,21 +72,35 @@ public class MainGameScreen{
         cBox.setBackground(Background.fill(Paint.valueOf("#A2A2A2")));
 
         //sets up send button in case user can't hit send
-        Image sendIcon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("sendButton.png")));
+        Image sendIcon = new Image(Objects.requireNonNull(getClass().getResourceAsStream("sendBetter.png")));
         ImageView sendImage = new ImageView(sendIcon);
-        sendImage.setFitHeight(50);
-        sendImage.setFitWidth(50);
+        sendImage.setFitHeight(16);
+        sendImage.setFitWidth(16);
         sendImage.setPreserveRatio(true);
-        sendImage.setSmooth(true);
-        sendImage.setCache(true);
-        sendImage.setTranslateY(180);
-        sendImage.setTranslateX(406);
 
+        //for hover effect purposes
+        Rectangle tmp = new Rectangle(10, 10);
+        tmp.setArcWidth(5);
+        tmp.setArcHeight(5);
+
+        //creates a new button which holds the send image in
         sendButton = new Button();
+        sendButton.setShape(tmp);
+        sendButton.setMaxSize(10, 10);
+        sendButton.setTranslateY(180);
+        sendButton.setTranslateX(400);
         sendButton.setGraphic(sendImage);
+        sendButton.setBackground(Background.fill(Color.rgb(162, 162, 162)));
 
+        //hover effects for the button
+        sendButton.setOnMouseEntered(e->{
+            sendButton.setBackground(Background.fill(Color.rgb(216, 216, 216, 0.5)));
+        });
+        sendButton.setOnMouseExited(e->{
+            sendButton.setBackground(Background.fill(Color.rgb(162, 162, 162)));
+        });
 
-        chatArea.getChildren().addAll(chatBox, cBox, sendImage);
+        chatArea.getChildren().addAll(chatBox, cBox, sendButton);
         return chatArea;
     }
     private Shape makeGrid(){
