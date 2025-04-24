@@ -3,6 +3,7 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -15,7 +16,9 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Shape;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.scene.text.FontWeight;
+
 
 import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
@@ -32,6 +35,8 @@ public class MainGameScreen{
     Scene gameScreen;
     TextField cBox;
     Button sendButton, exitGame;
+    Text vsText;
+    ListView<String> chatBox;
 
 
     public MainGameScreen(){
@@ -41,9 +46,12 @@ public class MainGameScreen{
         chat = makeChatBox();
         exitGame = leaveGame();
         highlight = hoverEffect();
+        vsText = new Text("");
+        vsText.setStyle("-fx-font: 24 Verdana;");
+        vsText.setTranslateY(-250);
 
 
-        root.getChildren().addAll(gridShape, chat, exitGame);
+        root.getChildren().addAll(vsText, gridShape, chat, exitGame);
         root.getChildren().addAll(highlight);
 
 
@@ -54,11 +62,14 @@ public class MainGameScreen{
         StackPane chatArea = new StackPane();
 
         //creates the initial area of the chat
-        Rectangle chatBox = new Rectangle(150, 400);
+//        Rectangle chatBox = new Rectangle(150, 400);
+        chatBox = new ListView<String>();
         chatBox.setTranslateX(350);
-        chatBox.setFill(Paint.valueOf("CDCDCD"));
-        chatBox.setArcWidth(20);
-        chatBox.setArcHeight(20);
+        chatBox.setTranslateY(-20);
+//        chatBox.setFill(Paint.valueOf("CDCDCD"));
+        chatBox.setMaxSize(150, 350);
+//        chatBox.setArcWidth(20);
+//        chatBox.setArcHeight(20);
 
         //creates the text field to send the message in
         cBox = new TextField();
@@ -145,9 +156,19 @@ public class MainGameScreen{
 
     public Scene getGameScreen(){return gameScreen;}
 
-    public String getMessage(){return cBox.getText();}
+    public String getMessage(){String mess = cBox.getText(); cBox.clear(); return mess;}
 
     public Button getExitGame(){return exitGame;}
+
+    public Button getSendButton(){return sendButton;}
+
+    public void setText(String t){
+        vsText.setText(t);
+    }
+
+    public void addChat(String chat){
+        chatBox.getItems().add(chat);
+    }
 
 
 }

@@ -21,9 +21,9 @@ import jdk.tools.jmod.Main;
 
 public class GuiClient extends Application{
 
-	MainGameScreen gameScreen = new MainGameScreen();
-	HomePage homeScreen = new HomePage();
-	SettingsPage settingsScreen = new SettingsPage();
+	MainGameScreen gameScreen;
+	HomePage homeScreen;
+	SettingsPage settingsScreen;
 	LoginScene login;
 
 	TextField c1;
@@ -31,7 +31,9 @@ public class GuiClient extends Application{
 	HashMap<String, Scene> sceneMap;
 	HashMap<String, Integer> loggedInUsers;
 	VBox clientBox;
+	String name;
 	Client clientConnection;
+	String opp;
 
 	HBox fields;
 
@@ -57,8 +59,9 @@ public class GuiClient extends Application{
 							listItems.getItems().add(data.code + " has disconnected!");
 							break;
 						case TEXT:
-							System.out.println("GOT A TEXT");
-							listItems.getItems().add(data.recipient+": "+data.message);
+							System.out.println("GOT A TEXT " + data.message);
+							gameScreen.addChat(data.recipient + ": " + data.message);
+//							listItems.getItems().add(data.recipient+": "+data.message);
 							break;
 						case USERS:
 							System.out.println("Trying to update ComboBox");
@@ -82,18 +85,36 @@ public class GuiClient extends Application{
 								login.createError();
 							}else if(data.code == 1){
 								System.out.println("VALID COMBO");
-								primaryStage.setScene(sceneMap.get("Box"));
+								name = data.message.substring(0, data.message.indexOf(" "));
+								homeScreen.updateText("Welcome to Connect Four, " + name + "!");
+								primaryStage.setScene(sceneMap.get("Home"));
 							}
 							break;
 						case LOGGEDIN:
 							listUsers.getItems().add(data.message);
+						case SERVERMESSAGE:
+							if(data.message.equals("SERVER LOOKING")){
+								homeScreen.updateText("SERVER IS LOOKING FOR A GAME");
+							}else if(data.message.equals("GAME FOUND")){
+								homeScreen.updateText("GAME FOUND");
+								primaryStage.setScene(sceneMap.get("Game"));
+								opp = data.recipient;
+								gameScreen.setText(name + " Vs. " + opp);
+							}
+
 					}
 			});
 		});
-
+//		MainGameScreen gameScreen = new MainGameScreen();
+		homeScreen = new HomePage("NULL");
+		settingsScreen = new SettingsPage("NULL");
+		gameScreen = new MainGameScreen();
 		login = new LoginScene();
 		sceneMap = new HashMap<>();
 		sceneMap.put("Login", login.getLoginScene());
+		sceneMap.put("Home", homeScreen.getHomeScreen());
+		sceneMap.put("Game", gameScreen.getGameScreen());
+		sceneMap.put("Settings", settingsScreen.getSettingsScreen());
 
 
 		//Start clients connection with the server
@@ -135,6 +156,7 @@ public class GuiClient extends Application{
 
 
 
+
 		//login screen buttons
 		login.getLoginButton().setOnAction(e->{
 			String username = login.getLoginName();
@@ -148,10 +170,11 @@ public class GuiClient extends Application{
 				login.loginPasswordError();
 				valid = false;
 			}
-//			if(valid){
-//				clientConnection.send(new Message(username, password, 1));
-//			}
-			primaryStage.setScene(homeScreen.getHomeScreen());
+			if(valid){
+				clientConnection.send(new Message(username, password, 1));
+//				primaryStage.setScene(homeScreen.getHomeScreen());
+			}
+
 		});
 		login.getCreateButton().setOnAction(e->{
 			String username = login.getCreateName();
@@ -165,10 +188,11 @@ public class GuiClient extends Application{
 				login.createPasswordError();
 				valid = false;
 			}
-//			if(valid){
-//				clientConnection.send(new Message(username, password, 0));
-//			}
-			primaryStage.setScene(homeScreen.getHomeScreen());
+			if(valid){
+				clientConnection.send(new Message(username, password, 0));
+//				primaryStage.setScene(homeScreen.getHomeScreen());
+			}
+
 		});
 
 		//home screen buttons
@@ -176,7 +200,9 @@ public class GuiClient extends Application{
 			primaryStage.setScene(login.getLoginScene());
 		});
 		homeScreen.getNewGame().setOnAction(e->{
-			primaryStage.setScene(gameScreen.getGameScreen());
+			//sends to client that this user is looking for a game
+			clientConnection.send(new Message(name, 1));
+//			primaryStage.setScene(gameScreen.getGameScreen());
 		});
 		homeScreen.getQuitGame().setOnAction(e->{
 			javafx.application.Platform.exit();
@@ -193,6 +219,13 @@ public class GuiClient extends Application{
 		//game screen buttons
 		gameScreen.getExitGame().setOnAction( e->{
 			primaryStage.setScene(homeScreen.getHomeScreen());
+		});
+
+		gameScreen.getSendButton().setOnAction(e->{
+			String mess = gameScreen.getMessage();
+			gameScreen.addChat(name + ": " + mess + "When clicked");
+			clientConnection.send(new Message(opp, mess));
+			System.err.println("OPP IS:  " + opp);
 		});
 		
 	}

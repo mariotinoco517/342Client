@@ -17,12 +17,12 @@ public class HomePage {
     Button newGame, addFriend, playFriend, playRandom, logout, quitGame, settings;
     Text title;
 
-    public HomePage(){
+    public HomePage(String name){
         root = new StackPane();
         root.setStyle("-fx-background-color: #BFE9F5");
 
         //sets up the title for the home page
-        title = new Text("Connect 4 Online");
+        title = new Text("Welcome to Connect Four, " + name + "!");
         title.setStyle("-fx-font: 24 Verdana;");
         title.setTranslateY(-200);
 
@@ -103,4 +103,8 @@ public class HomePage {
     public Button getQuitGame(){return quitGame;}
     public Button getAddFriend(){return addFriend;}
     public Button getSettings(){return settings;}
+
+    public void updateText(String t){
+        title.setText(t);
+    }
 }

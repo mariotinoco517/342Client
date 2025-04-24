@@ -19,20 +19,20 @@ public class SettingsPage {
     Button exitButton, saveButton, changePFP;
 
 
-    public SettingsPage(){
+    public SettingsPage(String name){
         StackPane root = new StackPane();
         root.setStyle("-fx-background-color: #BFE9F5");
 
         makeButtons();
-        makeBlurredBackground();
+        makeBlurredBackground(name);
         makeSettingsFrame();
 
         root.getChildren().addAll(blurredBackground, exitButton, settingsFrame);
 
         settingsScene = new Scene(root, 870, 520);
     }
-    private void makeBlurredBackground(){
-        HomePage backgroundPage = new HomePage();
+    private void makeBlurredBackground(String name){
+        HomePage backgroundPage = new HomePage(name);
         blurredBackground = backgroundPage.getHomePane();
         ColorAdjust adj = new ColorAdjust();
         GaussianBlur blur = new GaussianBlur(55);
