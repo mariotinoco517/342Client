@@ -34,6 +34,9 @@ public class GuiClient extends Application{
 	String name;
 	Client clientConnection;
 	String opp;
+	//temp for testing
+	int wins;
+	int loses;
 
 	HBox fields;
 
@@ -92,6 +95,7 @@ public class GuiClient extends Application{
 							break;
 						case LOGGEDIN:
 							listUsers.getItems().add(data.message);
+							break;
 						case SERVERMESSAGE:
 							if(data.message.equals("SERVER LOOKING")){
 								homeScreen.updateText("SERVER IS LOOKING FOR A GAME");
@@ -100,7 +104,18 @@ public class GuiClient extends Application{
 								primaryStage.setScene(sceneMap.get("Game"));
 								opp = data.recipient;
 								gameScreen.setText(name + " Vs. " + opp);
+							}else if(data.message.equals("WINNER")){
+								wins++;
+								gameScreen = new MainGameScreen();
+								homeScreen.updateText(wins + " W:" + loses + "L");
+								primaryStage.setScene(homeScreen.getHomeScreen());
+							}else if(data.message.equals("LOSER")){
+								loses++;
+								gameScreen = new MainGameScreen();
+								homeScreen.updateText(wins + " W:" + loses + "L");
+								primaryStage.setScene(homeScreen.getHomeScreen());
 							}
+							break;
 
 					}
 			});
@@ -218,12 +233,13 @@ public class GuiClient extends Application{
 
 		//game screen buttons
 		gameScreen.getExitGame().setOnAction( e->{
-			primaryStage.setScene(homeScreen.getHomeScreen());
+			clientConnection.send(new Message(opp, "EXIT GAME"));
+//			primaryStage.setScene(homeScreen.getHomeScreen());
 		});
 
 		gameScreen.getSendButton().setOnAction(e->{
 			String mess = gameScreen.getMessage();
-			gameScreen.addChat(name + ": " + mess + "When clicked");
+			gameScreen.addChat(name + ": " + mess);
 			clientConnection.send(new Message(opp, mess));
 			System.err.println("OPP IS:  " + opp);
 		});
