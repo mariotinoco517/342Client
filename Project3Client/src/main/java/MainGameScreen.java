@@ -199,5 +199,9 @@ public class MainGameScreen{
         chatBox.getItems().add(chat);
     }
 
+    public void clearChat(){
+        chatBox.getItems().clear();
+    }
+
 
 }

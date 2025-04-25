@@ -91,7 +91,9 @@ public class GuiClient extends Application{
 							}else if(data.code == 1){
 								System.out.println("VALID COMBO");
 								name = data.message.substring(0, data.message.indexOf(" "));
-								homeScreen.updateText("Welcome to Connect Four, " + name + "!");
+								wins = data.wl[1];
+								loses = data.wl[0];
+								homeScreen.updateText("Welcome to Connect Four, " + name + "!\n" + wins + " wins and " + loses + " loses");
 								primaryStage.setScene(sceneMap.get("Home"));
 							}
 							break;
@@ -107,13 +109,15 @@ public class GuiClient extends Application{
 								opp = data.recipient;
 								gameScreen.setText(name + " Vs. " + opp);
 							}else if(data.message.equals("WINNER")){
+								//todo clear game board as well
 								wins++;
-								gameScreen = new MainGameScreen();
+								gameScreen.clearChat();
 								homeScreen.updateText(wins + " W:" + loses + "L");
 								primaryStage.setScene(homeScreen.getHomeScreen());
 							}else if(data.message.equals("LOSER")){
+								//todo clear game board as well
 								loses++;
-								gameScreen = new MainGameScreen();
+								gameScreen.clearChat();
 								homeScreen.updateText(wins + " W:" + loses + "L");
 								primaryStage.setScene(homeScreen.getHomeScreen());
 							}
