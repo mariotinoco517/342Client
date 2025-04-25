@@ -8,6 +8,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -21,15 +22,19 @@ import javafx.scene.text.FontWeight;
 
 
 import java.awt.geom.RoundRectangle2D;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 //if you want to see this game screen go to where the get login button is and read the comment there
 public class MainGameScreen{
     private static final int COL = 7; //num of columns of the board
     private static final int ROW = 6; //num of rows of the board
     private static final int tileSize = 60; //size of the tiles which ultimately changes the size of the board
+    GridPane gridPane = new GridPane();
+
 
     List<Rectangle> highlight;
     Scene gameScreen;
@@ -37,6 +42,7 @@ public class MainGameScreen{
     Button sendButton, exitGame;
     Text vsText;
     ListView<String> chatBox;
+    int playerNum = 0;
 
 
     public MainGameScreen(){
@@ -51,7 +57,7 @@ public class MainGameScreen{
         vsText.setTranslateY(-250);
 
 
-        root.getChildren().addAll(vsText, gridShape, chat, exitGame);
+        root.getChildren().addAll(vsText, gridShape, gridPane, chat, exitGame);
         root.getChildren().addAll(highlight);
 
 
@@ -119,12 +125,14 @@ public class MainGameScreen{
         for(int y = 0; y < ROW; ++y) {
             for (int x = 0; x < COL; ++x) {
                 Circle circle = new Circle(tileSize / 2); //defines the size of the circles
-                circle.setCenterX(tileSize / 2); //centers every circle for an easier translation
-                circle.setCenterY(tileSize / 2);
-                circle.setTranslateX(x * (tileSize + 5) + tileSize/4); //divide by 4 in order to match up to the board
-                circle.setTranslateY(y * (tileSize + 5) + tileSize/4); //according to the tile size
+                circle.setFill(Paint.valueOf("#BFE9F5"));
 
-                shape = shape.subtract(shape, circle);
+                gridPane.setConstraints(circle, x, y);
+                gridPane.setHgap(5);
+                gridPane.setVgap(5);
+                gridPane.setTranslateX(208);
+                gridPane.setTranslateY(68);
+                gridPane.getChildren().add(circle);
             }
         }
         shape.setFill(Color.BLUE);
@@ -140,18 +148,39 @@ public class MainGameScreen{
     }
     private List<Rectangle> hoverEffect(){
         List<Rectangle> theList = new ArrayList<>();
-        for(int x = 0; x < COL; ++x){
-            int colNum = x;
+        for(int y = 0; y < COL; ++y){
+            final int colNum = y;
             Rectangle addToCol = new Rectangle(tileSize, (ROW+1) * tileSize);
-            addToCol.setTranslateX((x * (tileSize+5)+ tileSize/4) - 210);
+            addToCol.setTranslateX((colNum * (tileSize+5)+ tileSize/4) - 210);
             addToCol.setFill(Color.TRANSPARENT);
-
             addToCol.setOnMouseEntered(e-> addToCol.setFill(Color.rgb(253, 251, 124, 0.5)));
             addToCol.setOnMouseExited(e-> addToCol.setFill(Color.TRANSPARENT));
-            //addToCol.setOnMouseClicked(e-> {});
+            addToCol.setOnMouseClicked(e-> {
+                placeToken(colNum);
+            });
+
             theList.add(addToCol);
         }
         return theList;
+    }
+
+    public void placeToken(int colNum){
+        //check with server
+        //recieve x value on where to be placed by server
+        int x = 5;
+        Circle circle = (Circle) gridPane.getChildren().get((x*7)+colNum);
+        while(!(circle.getFill().equals((Paint.valueOf("#BFE9F5")))) && x > 0){
+            x -= 1;
+            circle = (Circle) gridPane.getChildren().get((x*7)+colNum);
+        }
+        if(playerNum == 0){
+            circle.setFill(Color.RED);
+            playerNum = 1;
+        }
+        else{
+            circle.setFill(Color.YELLOW);
+            playerNum = 0;
+        }
     }
 
     public Scene getGameScreen(){return gameScreen;}

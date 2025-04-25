@@ -24,6 +24,8 @@ public class GuiClient extends Application{
 	MainGameScreen gameScreen;
 	HomePage homeScreen;
 	SettingsPage settingsScreen;
+	FriendCode friendCode = new FriendCode();
+	GameSettings gameSettings = new GameSettings();
 	LoginScene login;
 
 	TextField c1;
@@ -225,6 +227,9 @@ public class GuiClient extends Application{
 		homeScreen.getSettings().setOnAction(e->{
 			primaryStage.setScene(settingsScreen.getSettingsScreen());
 		});
+		homeScreen.getPlayFriend().setOnAction(e->{
+			primaryStage.setScene(friendCode.getFriendCodeScreen());
+		});
 
 		//settings screen buttons
 		settingsScreen.getExitButton().setOnAction(e->{
@@ -243,7 +248,19 @@ public class GuiClient extends Application{
 			clientConnection.send(new Message(opp, mess));
 			System.err.println("OPP IS:  " + opp);
 		});
-		
+
+		//friend code screen buttons
+		friendCode.getExitButton().setOnAction(e->{
+			primaryStage.setScene(homeScreen.getHomeScreen());
+		});
+
+		//game settings screen buttons
+		gameSettings.getExitButton().setOnAction(e->{
+			primaryStage.setScene(homeScreen.getHomeScreen());
+		});
+		gameSettings.getEnterCode().setOnAction(e->{
+			primaryStage.setScene(gameScreen.getGameScreen());
+		});
 	}
 
 	
