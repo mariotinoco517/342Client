@@ -186,6 +186,8 @@ public class MainGameScreen{
 
     public Button getSendButton(){return sendButton;}
 
+    public TextField getEnterMessage(){return cBox;}
+
     public void setText(String t){
         vsText.setText(t);
     }

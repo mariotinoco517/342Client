@@ -27,6 +27,8 @@ public class GuiClient extends Application{
 	FriendCode friendCode = new FriendCode();
 	GameSettings gameSettings = new GameSettings();
 	LoginScene login;
+	YouRematch rematch = new YouRematch();
+	RematchWait waitRematch = new RematchWait();
 
 	TextField c1;
 	Button b1;
@@ -254,6 +256,9 @@ public class GuiClient extends Application{
 		homeScreen.getPlayFriend().setOnAction(e->{
 			primaryStage.setScene(friendCode.getFriendCodeScreen());
 		});
+		homeScreen.getAddFriend().setOnAction(e->{
+			primaryStage.setScene(waitRematch.getRematchWaitScreen());
+		});
 
 		//settings screen buttons
 		settingsScreen.getExitButton().setOnAction(e->{
@@ -262,10 +267,16 @@ public class GuiClient extends Application{
 
 		//game screen buttons
 		gameScreen.getExitGame().setOnAction( e->{
-			clientConnection.send(new Message(opp, "EXIT GAME"));
-//			primaryStage.setScene(homeScreen.getHomeScreen());
+			primaryStage.setScene(rematch.getRematchScreen());
+			//clientConnection.send(new Message(opp, "EXIT GAME"));
 		});
 		gameScreen.getSendButton().setOnAction(e->{
+			String mess = gameScreen.getMessage();
+			gameScreen.addChat(name + ": " + mess);
+			clientConnection.send(new Message(opp, mess));
+			System.err.println("OPP IS:  " + opp);
+		});
+		gameScreen.getEnterMessage().setOnAction(e->{
 			String mess = gameScreen.getMessage();
 			gameScreen.addChat(name + ": " + mess);
 			clientConnection.send(new Message(opp, mess));
@@ -285,6 +296,13 @@ public class GuiClient extends Application{
 			primaryStage.setScene(gameScreen.getGameScreen());
 		});
 
+		//rematch screen buttons
+		rematch.getReturnMenu().setOnAction(e->{
+			primaryStage.setScene(homeScreen.getHomeScreen());
+		});
+		rematch.getRematchButton().setOnAction(e->{
+			primaryStage.setScene(waitRematch.getRematchWaitScreen());
+		});
 	}
 
 	
