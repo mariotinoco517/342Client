@@ -9,6 +9,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.event.EventHandler;
 
 public class SettingsPage {
     Scene settingsScene;
@@ -18,14 +21,19 @@ public class SettingsPage {
     Rectangle settingsStructure, settingsLine;
     Button exitButton, saveButton, changePFP;
 
+    Client clientConnection;
+    String name;
 
-    public SettingsPage(String name){
+
+    public SettingsPage(String name, Client c){
         StackPane root = new StackPane();
         root.setStyle("-fx-background-color: #BFE9F5");
 
         makeButtons();
         makeBlurredBackground(name);
         makeSettingsFrame();
+
+        clientConnection = c;
 
         root.getChildren().addAll(blurredBackground, exitButton, settingsFrame);
 
@@ -69,6 +77,16 @@ public class SettingsPage {
         nameChange.setTranslateX(70);
         nameChange.setTranslateY(-40);
         nameChange.setMaxSize(180, 10);
+
+        nameChange.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent keyEvent) {
+                if(keyEvent.getCode().equals(KeyCode.ENTER)){
+                    clientConnection.send(new Message(nameChange.getText(), "", 0));
+                    nameChange.clear();
+                }
+            }
+        });
 
         setPFP = new Text("Set Profile Picture:");
         setPFP.setStyle("-fx-font : 15 Verdana;");
@@ -117,4 +135,8 @@ public class SettingsPage {
     public Scene getSettingsScreen(){return settingsScene;}
     public Button getExitButton(){return exitButton;}
     public Button getSaveButton(){return saveButton;}
+
+    public void updateName(String n){
+        name = n;
+    }
 }

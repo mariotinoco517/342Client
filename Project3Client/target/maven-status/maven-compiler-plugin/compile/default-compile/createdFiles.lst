@@ -1,6 +1,9 @@
 Client.class
+SettingsPage$1.class
+YouRematch.class
 LoginScene.class
 Message.class
+RematchWait.class
 MainGameScreen.class
 MessageType.class
 FriendCode.class

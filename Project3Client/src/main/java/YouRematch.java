@@ -77,4 +77,14 @@ public class YouRematch {
     public Button getRematchButton(){
         return rematch;
     }
+
+    public void updateText(int result){
+        if(result == -1){
+            title.setText("You Lost :(");
+        }else if(result == 0){
+            title.setText("You Drew :|");
+        }else if(result == 1){
+            title.setText("You Won :D");
+        }
+    }
 }

@@ -28,7 +28,7 @@ public class GuiClient extends Application{
 	GameSettings gameSettings = new GameSettings();
 	LoginScene login;
 	YouRematch rematch = new YouRematch();
-	RematchWait waitRematch = new RematchWait();
+	RematchWait rematchWait = new RematchWait();
 
 	TextField c1;
 	Button b1;
@@ -40,13 +40,15 @@ public class GuiClient extends Application{
 	String opp;
 	int wins;
 	int loses;
+	boolean waiting;
+	boolean oppWaiting;
 
 	HBox fields;
 
 	ComboBox<String> listUsers;
 	ListView<String> listItems;
 
-	
+
 	public static void main(String[] args) {
 		launch(args);
 	}
@@ -54,103 +56,129 @@ public class GuiClient extends Application{
 	@Override
 	public void start(Stage primaryStage) throws Exception {
 		clientConnection = new Client(data->{
-				Platform.runLater(()->{
-					switch (data.type){
-						case NEWUSER:
+			Platform.runLater(()->{
+				switch (data.type){
+					case NEWUSER:
 //							listUsers.getItems().add(data.code + "");
-							listItems.getItems().add("Client number" + data.code + " has joined but isn't logged in!");
-							break;
-						case DISCONNECT:
+						listItems.getItems().add("Client number" + data.code + " has joined but isn't logged in!");
+						break;
+					case DISCONNECT:
 //							listUsers.getItems().remove(data.code);
-							listItems.getItems().add(data.code + " has disconnected!");
-							break;
-						case TEXT:
-							System.out.println("GOT A TEXT " + data.message);
-							gameScreen.addChat(data.recipient + ": " + data.message);
+						listItems.getItems().add(data.code + " has disconnected!");
+						break;
+					case TEXT:
+						System.out.println("GOT A TEXT " + data.message);
+						gameScreen.addChat(data.recipient + ": " + data.message);
 //							listItems.getItems().add(data.recipient+": "+data.message);
-							break;
-						case USERS:
-							System.out.println("Trying to update ComboBox");
-							//gets a hashmap of logged in clients and adds usernames to listUsers
-							loggedInUsers = data.loggedInClient;
-							for(String u: loggedInUsers.keySet()){
-								if(!(listUsers.getItems().contains(u))){
-									System.out.println(u);
-									listUsers.getItems().add(u);
-								}
-
+						break;
+					case USERS:
+						System.out.println("Trying to update ComboBox");
+						//gets a hashmap of logged in clients and adds usernames to listUsers
+						loggedInUsers = data.loggedInClient;
+						for(String u: loggedInUsers.keySet()){
+							if(!(listUsers.getItems().contains(u))){
+								System.out.println(u);
+								listUsers.getItems().add(u);
 							}
-							break;
-						case VALIDNAME:
-							System.out.println("Getting validation");
-							if(data.code == 404){
-								System.err.println("USER NOT FOUND");
-								login.loginError();
-							}else if(data.code == 414){
-								System.err.println("USER ALREADY EXISTS");
-								login.createError();
-							}else if(data.code == 1){
-								System.out.println("VALID COMBO");
-								name = data.message.substring(0, data.message.indexOf(" "));
-								wins = data.wl[1];
-								loses = data.wl[0];
-								homeScreen.updateText("Welcome to Connect Four, " + name + "!\n" + wins + " wins and " + loses + " loses");
+
+						}
+						break;
+					case VALIDNAME:
+						System.out.println("Getting validation");
+						if(data.code == 404){
+							System.err.println("USER NOT FOUND");
+							login.loginError();
+						}else if(data.code == 414){
+							System.err.println("USER ALREADY EXISTS");
+							login.createError();
+						}else if(data.code == 1){
+							System.out.println("VALID COMBO");
+							primaryStage.setScene(homeScreen.getHomeScreen());
+							name = data.message.substring(0, data.message.indexOf(" "));
+							settingsScreen.updateName(name);
+							wins = data.wl[1];
+							loses = data.wl[0];
+							homeScreen.updateText("Welcome to Connect Four, " + name + "!\n" + wins + " wins and " + loses + " loses");
+//							primaryStage.setScene(homeScreen.getHomeScreen());
+						}
+						break;
+					case LOGGEDIN:
+						listUsers.getItems().add(data.message);
+						break;
+					case SERVERMESSAGE:
+						if(data.message.equals("SERVER LOOKING")){
+							homeScreen.updateText("SERVER IS LOOKING FOR A GAME");
+						}else if(data.message.equals("GAME FOUND")){
+							homeScreen.updateText("GAME FOUND");
+							primaryStage.setScene(sceneMap.get("Game"));
+							opp = data.recipient;
+							gameScreen.setText(name + " Vs. " + opp);
+						}else if(data.message.equals("WINNER")){
+							wins++;
+							gameScreen.clearGrid();
+							gameScreen.clearChat();
+							homeScreen.updateText(wins + " W:" + loses + "L");
+							primaryStage.setScene(sceneMap.get("Rematch"));
+							rematch.updateText(1);
+						}else if(data.message.equals("LOSER")){
+							loses++;
+							gameScreen.clearGrid();
+							gameScreen.clearChat();
+							homeScreen.updateText(wins + " W:" + loses + "L");
+							primaryStage.setScene(sceneMap.get("Rematch"));
+							rematch.updateText(-1);
+						}else if(data.message.equals("REMATCH")){
+							//opponent didn't rematch
+							if(data.code == 0){
+								System.out.println("OPP didnt rematch");
+								primaryStage.setScene(sceneMap.get("Home"));
+								homeScreen.updateText("Opponent didn't rematch");
+								waiting = false;
+								oppWaiting = false;
+							}else{
+								oppWaiting = true;
+								if(waiting){
+									primaryStage.setScene(sceneMap.get("Game"));
+									waiting = false;
+									oppWaiting = false;
+								}
+							}
+						}
+						break;
+					case PLAYERMOVE:
+						if(data.code == 0 && data.message.equals(name)){
+							System.err.println("Invalid Move at Column: " + data.move);
+						}else if(data.code == 1){
+							if(data.message.equals(name)){
+								System.out.println("Valid Move at Column: " + data.move);
+								gameScreen.placeToken(data.move, 0);
+							}else{
+								gameScreen.placeToken(data.move, 1);
+							}
+
+						}else if(data.code == 2){
+							if(data.message.equals(name)){
+								System.out.println("WINNER!!!");
+								gameScreen.clearGrid();
 								primaryStage.setScene(sceneMap.get("Home"));
 							}
-							break;
-						case LOGGEDIN:
-							listUsers.getItems().add(data.message);
-							break;
-						case SERVERMESSAGE:
-							if(data.message.equals("SERVER LOOKING")){
-								homeScreen.updateText("SERVER IS LOOKING FOR A GAME");
-							}else if(data.message.equals("GAME FOUND")){
-								homeScreen.updateText("GAME FOUND");
-								primaryStage.setScene(sceneMap.get("Game"));
-								opp = data.recipient;
-								gameScreen.setText(name + " Vs. " + opp);
-							}else if(data.message.equals("WINNER")){
-								//todo clear game board as well
-								wins++;
-								gameScreen.clearGrid();
-								gameScreen.clearChat();
-								homeScreen.updateText(wins + " W:" + loses + "L");
-								primaryStage.setScene(homeScreen.getHomeScreen());
-							}else if(data.message.equals("LOSER")){
-								//todo clear game board as well
-								loses++;
-								gameScreen.clearGrid();
-								gameScreen.clearChat();
-								homeScreen.updateText(wins + " W:" + loses + "L");
-								primaryStage.setScene(homeScreen.getHomeScreen());
-							}
-							break;
-						case PLAYERMOVE:
-							if(data.code == 0 && data.message.equals(name)){
-								//todo tell user their move was invalid
-								System.err.println("Invalid Move at Column: " + data.move);
-							}else if(data.code == 1){
-								if(data.message.equals(name)){
-									System.out.println("Valid Move at Column: " + data.move);
-									gameScreen.placeToken(data.move, 0);
-								}else{
-									gameScreen.placeToken(data.move, 1);
-								}
-
-							}else if(data.code == 2){
-								if(data.message.equals(name)){
-									System.out.println("WINNER!!!");
-									gameScreen.clearGrid();
-									primaryStage.setScene(sceneMap.get("Home"));
-								}
-
-							}
-					}
+						}
+						break;
+					case CHANGENAME:
+						name = data.message;
+						settingsScreen.updateName(name);
+						homeScreen.updateText("Welcome to Connect Four, " + name + "!\n" + wins + " wins and " + loses + " loses");
+						break;
+//					case REMATCH:
+//						primaryStage.setScene(sceneMap.get("Game"));
+//						opp = data.recipient;
+//						gameScreen.setText(name + " Vs. " + opp);
+				}
 			});
 		});
 //		MainGameScreen gameScreen = new MainGameScreen();
 		homeScreen = new HomePage("NULL");
-		settingsScreen = new SettingsPage("NULL");
+		settingsScreen = new SettingsPage("NULL", clientConnection);
 		gameScreen = new MainGameScreen(clientConnection, name);
 		login = new LoginScene();
 		sceneMap = new HashMap<>();
@@ -158,6 +186,7 @@ public class GuiClient extends Application{
 		sceneMap.put("Home", homeScreen.getHomeScreen());
 		sceneMap.put("Game", gameScreen.getGameScreen());
 		sceneMap.put("Settings", settingsScreen.getSettingsScreen());
+		sceneMap.put("Rematch", rematch.getRematchScreen());
 
 
 		//Start clients connection with the server
@@ -170,7 +199,7 @@ public class GuiClient extends Application{
 		listUsers.setValue("Send to All");
 		listItems = new ListView<String>();
 
-		
+
 		c1 = new TextField();
 		b1 = new Button("Send");
 		fields = new HBox(listUsers,b1);
@@ -182,12 +211,12 @@ public class GuiClient extends Application{
 
 
 		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent t) {
-                Platform.exit();
-                System.exit(0);
-            }
-        });
+			@Override
+			public void handle(WindowEvent t) {
+				Platform.exit();
+				System.exit(0);
+			}
+		});
 
 
 //		sceneMap.put("Box", new Scene(clientBox, 400, 300));
@@ -238,14 +267,18 @@ public class GuiClient extends Application{
 
 		});
 
+
 		//home screen buttons
 		homeScreen.getLogout().setOnAction(e->{
 			primaryStage.setScene(login.getLoginScene());
 		});
 		homeScreen.getNewGame().setOnAction(e->{
 			//sends to client that this user is looking for a game
+//			clientConnection.send(new Message(name, -1));
+			primaryStage.setScene(gameSettings.gameSettingsScene);
+		});
+		homeScreen.getPlayRandom().setOnAction(e->{
 			clientConnection.send(new Message(name, -1));
-//			primaryStage.setScene(gameScreen.getGameScreen());
 		});
 		homeScreen.getQuitGame().setOnAction(e->{
 			javafx.application.Platform.exit();
@@ -256,9 +289,6 @@ public class GuiClient extends Application{
 		homeScreen.getPlayFriend().setOnAction(e->{
 			primaryStage.setScene(friendCode.getFriendCodeScreen());
 		});
-		homeScreen.getAddFriend().setOnAction(e->{
-			primaryStage.setScene(waitRematch.getRematchWaitScreen());
-		});
 
 		//settings screen buttons
 		settingsScreen.getExitButton().setOnAction(e->{
@@ -267,16 +297,10 @@ public class GuiClient extends Application{
 
 		//game screen buttons
 		gameScreen.getExitGame().setOnAction( e->{
-			primaryStage.setScene(rematch.getRematchScreen());
-			//clientConnection.send(new Message(opp, "EXIT GAME"));
+			clientConnection.send(new Message(opp, "EXIT GAME"));
+//			primaryStage.setScene(homeScreen.getHomeScreen());
 		});
 		gameScreen.getSendButton().setOnAction(e->{
-			String mess = gameScreen.getMessage();
-			gameScreen.addChat(name + ": " + mess);
-			clientConnection.send(new Message(opp, mess));
-			System.err.println("OPP IS:  " + opp);
-		});
-		gameScreen.getEnterMessage().setOnAction(e->{
 			String mess = gameScreen.getMessage();
 			gameScreen.addChat(name + ": " + mess);
 			clientConnection.send(new Message(opp, mess));
@@ -296,16 +320,27 @@ public class GuiClient extends Application{
 			primaryStage.setScene(gameScreen.getGameScreen());
 		});
 
-		//rematch screen buttons
+		rematch.getRematchButton().setOnAction(e->{
+			if(oppWaiting){
+				primaryStage.setScene(gameScreen.getGameScreen());
+				clientConnection.send(new Message(1));
+				oppWaiting = false;
+			}else{
+				primaryStage.setScene(rematchWait.getRematchWaitScreen());
+				clientConnection.send(new Message(1));
+				waiting = true;
+			}
+
+		});
 		rematch.getReturnMenu().setOnAction(e->{
 			primaryStage.setScene(homeScreen.getHomeScreen());
+			clientConnection.send(new Message(0));
+			waiting = false;
 		});
-		rematch.getRematchButton().setOnAction(e->{
-			primaryStage.setScene(waitRematch.getRematchWaitScreen());
-		});
+
 	}
 
-	
+
 
 
 }
