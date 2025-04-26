@@ -1,6 +1,3 @@
-import javafx.application.Application;
-import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
@@ -9,7 +6,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
@@ -18,15 +14,9 @@ import javafx.scene.shape.Shape;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.scene.text.FontWeight;
-
-
-import java.awt.geom.RoundRectangle2D;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 //if you want to see this game screen go to where the get login button is and read the comment there
 public class MainGameScreen{
@@ -43,9 +33,16 @@ public class MainGameScreen{
     Text vsText;
     ListView<String> chatBox;
     int playerNum = 0;
+    int colChosen = -1;
+    String name;
+
+    Client clientConnection;
 
 
-    public MainGameScreen(){
+    public MainGameScreen(Client connection, String user){
+        clientConnection = connection;
+        name = user;
+
         StackPane root = new StackPane();
         StackPane chat;
         Shape gridShape = makeGrid();
@@ -156,7 +153,7 @@ public class MainGameScreen{
             addToCol.setOnMouseEntered(e-> addToCol.setFill(Color.rgb(253, 251, 124, 0.5)));
             addToCol.setOnMouseExited(e-> addToCol.setFill(Color.TRANSPARENT));
             addToCol.setOnMouseClicked(e-> {
-                placeToken(colNum);
+                clientConnection.send(new Message(name, colNum));
             });
 
             theList.add(addToCol);
@@ -164,7 +161,7 @@ public class MainGameScreen{
         return theList;
     }
 
-    public void placeToken(int colNum){
+    public void placeToken(int colNum, int p){
         //check with server
         //recieve x value on where to be placed by server
         int x = 5;
@@ -173,13 +170,11 @@ public class MainGameScreen{
             x -= 1;
             circle = (Circle) gridPane.getChildren().get((x*7)+colNum);
         }
-        if(playerNum == 0){
+        if(p == 0){
             circle.setFill(Color.RED);
-            playerNum = 1;
         }
         else{
             circle.setFill(Color.YELLOW);
-            playerNum = 0;
         }
     }
 
@@ -201,6 +196,19 @@ public class MainGameScreen{
 
     public void clearChat(){
         chatBox.getItems().clear();
+    }
+
+    public void clearGrid(){
+        for(int y = 0; y < COL; ++y){
+            int x = 5;
+            Circle circle = (Circle) gridPane.getChildren().get((x*7)+y);
+            while(!(circle.getFill().equals((Paint.valueOf("#BFE9F5")))) && x >= 0){
+                x--;
+                circle.setFill(Paint.valueOf("#BFE9F5"));
+                circle = (Circle) gridPane.getChildren().get((x*7)+y);
+            }
+        }
+
     }
 
 

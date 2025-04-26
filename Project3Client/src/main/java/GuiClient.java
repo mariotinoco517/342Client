@@ -36,7 +36,6 @@ public class GuiClient extends Application{
 	String name;
 	Client clientConnection;
 	String opp;
-	//temp for testing
 	int wins;
 	int loses;
 
@@ -111,25 +110,46 @@ public class GuiClient extends Application{
 							}else if(data.message.equals("WINNER")){
 								//todo clear game board as well
 								wins++;
+								gameScreen.clearGrid();
 								gameScreen.clearChat();
 								homeScreen.updateText(wins + " W:" + loses + "L");
 								primaryStage.setScene(homeScreen.getHomeScreen());
 							}else if(data.message.equals("LOSER")){
 								//todo clear game board as well
 								loses++;
+								gameScreen.clearGrid();
 								gameScreen.clearChat();
 								homeScreen.updateText(wins + " W:" + loses + "L");
 								primaryStage.setScene(homeScreen.getHomeScreen());
 							}
 							break;
+						case PLAYERMOVE:
+							if(data.code == 0 && data.message.equals(name)){
+								//todo tell user their move was invalid
+								System.err.println("Invalid Move at Column: " + data.move);
+							}else if(data.code == 1){
+								if(data.message.equals(name)){
+									System.out.println("Valid Move at Column: " + data.move);
+									gameScreen.placeToken(data.move, 0);
+								}else{
+									gameScreen.placeToken(data.move, 1);
+								}
 
+							}else if(data.code == 2){
+								if(data.message.equals(name)){
+									System.out.println("WINNER!!!");
+									gameScreen.clearGrid();
+									primaryStage.setScene(sceneMap.get("Home"));
+								}
+
+							}
 					}
 			});
 		});
 //		MainGameScreen gameScreen = new MainGameScreen();
 		homeScreen = new HomePage("NULL");
 		settingsScreen = new SettingsPage("NULL");
-		gameScreen = new MainGameScreen();
+		gameScreen = new MainGameScreen(clientConnection, name);
 		login = new LoginScene();
 		sceneMap = new HashMap<>();
 		sceneMap.put("Login", login.getLoginScene());
@@ -168,7 +188,7 @@ public class GuiClient extends Application{
         });
 
 
-		sceneMap.put("Box", new Scene(clientBox, 400, 300));
+//		sceneMap.put("Box", new Scene(clientBox, 400, 300));
 
 		primaryStage.setScene(sceneMap.get("Login"));
 		primaryStage.setTitle("Client");
@@ -222,7 +242,7 @@ public class GuiClient extends Application{
 		});
 		homeScreen.getNewGame().setOnAction(e->{
 			//sends to client that this user is looking for a game
-			clientConnection.send(new Message(name, 1));
+			clientConnection.send(new Message(name, -1));
 //			primaryStage.setScene(gameScreen.getGameScreen());
 		});
 		homeScreen.getQuitGame().setOnAction(e->{
@@ -245,7 +265,6 @@ public class GuiClient extends Application{
 			clientConnection.send(new Message(opp, "EXIT GAME"));
 //			primaryStage.setScene(homeScreen.getHomeScreen());
 		});
-
 		gameScreen.getSendButton().setOnAction(e->{
 			String mess = gameScreen.getMessage();
 			gameScreen.addChat(name + ": " + mess);
@@ -265,6 +284,7 @@ public class GuiClient extends Application{
 		gameSettings.getEnterCode().setOnAction(e->{
 			primaryStage.setScene(gameScreen.getGameScreen());
 		});
+
 	}
 
 	

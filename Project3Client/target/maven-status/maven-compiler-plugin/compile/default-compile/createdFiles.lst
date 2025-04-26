@@ -1,1 +1,12 @@
+Client.class
+LoginScene.class
+Message.class
+MainGameScreen.class
+MessageType.class
+FriendCode.class
+GameSettings.class
+GuiClient.class
+GuiClient$2.class
 SettingsPage.class
+HomePage.class
+GuiClient$1.class
